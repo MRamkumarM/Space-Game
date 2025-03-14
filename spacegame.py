@@ -4,38 +4,51 @@ import random
 
 # Initialize Pygame
 pygame.init()
+score = 0
+font = pygame.font.Font('freesansbold.ttf', 32)
+
 # Screen dimensions
 wn_width, wn_height = 1000, 700
 wn = pygame.display.set_mode((wn_width, wn_height))
 pygame.display.set_caption("Shooting Game")
-
-# Define the Enemy class
-class Enemy:
-    def __init__(self, x, y, width, height, speed):
-        self.rect = pygame.Rect(x, y, width, height)
-        self.speed = speed
-
-    def move(self):
-        self.rect.y += self.speed
-
-    def draw(self, surface):
-        pygame.draw.rect(surface, (0, 255, 0), self.rect)
-
-# Function to create a new enemy
-def create_enemy():
-    x = random.randint(0, wn_width - 20)  # Random x position within screen bounds
-    y = 0  # Start at the top of the screen
-    width, height = 20, 20  # Size of the enemy
-    speed = random.randint(1, 3)  # Random speed
-    return Enemy(x, y, width, height, speed)
 
 # Load player image
 img = pygame.image.load("E:/py/python/sample_python_projects/s.png")
 img = pygame.transform.scale(img, (50, 75))  # Resize the image
 player = img.get_rect(center=(500, 650))  # Position the player
 
-# img1 = pygame.image.load("E:\py\python\sample_python_projects\OIP.jpg")
-# img1 = pygame.transform.scale(img1,(1000,700))
+# Load enemy image
+img1 = pygame.image.load("E:/py/python/sample_python_projects/OIP.jpg")
+img1 = pygame.transform.scale(img1, (20, 20))  # Resize enemy image
+
+# Load game over image
+game_over_img = pygame.image.load("E:/py/python/sample_python_projects/game_over.jpg")
+game_over_img = pygame.transform.scale(game_over_img, (300, 150))
+
+def show_game_over():
+    wn.fill((0, 0, 0))  # Clear the screen
+    wn.blit(game_over_img, (wn_width // 2 - 150, wn_height // 2 - 75))  # Display game over image
+    pygame.display.flip()
+    pygame.time.delay(2000)  # Pause for 2 seconds before quitting
+
+# Define the Enemy class
+class Enemy:
+    def __init__(self, x, y, speed):
+        self.rect = pygame.Rect(x, y, 20, 20)
+        self.speed = speed
+
+    def move(self):
+        self.rect.y += self.speed
+
+    def draw(self, surface):
+        surface.blit(img1, self.rect.topleft)
+
+# Function to create a new enemy
+def create_enemy():
+    x = random.randint(0, wn_width - 20)  # Random x position within screen bounds
+    y = 0  # Start at the top of the screen
+    speed = random.randint(1, 3)  # Random speed
+    return Enemy(x, y, speed)
 
 # Game variables
 speed = 5  # Player movement speed
@@ -50,6 +63,10 @@ clock = pygame.time.Clock()
 while run:
     wn.fill((0, 0, 0))  # Clear the screen
 
+    # Render the score text
+    text = font.render(f"Your Score: {score}", True, (255, 255, 255))
+    wn.blit(text, (10, 10))
+
     for event in pygame.event.get():
         if event.type == pygame.QUIT:
             run = False
@@ -57,7 +74,6 @@ while run:
             if event.key == K_SPACE:
                 bullet = pygame.Rect(player.centerx - 2, player.top, 5, 10)  # Create a bullet at the player's position
                 bullets.append(bullet)
-
 
     # Player movement (left and right)
     keys = pygame.key.get_pressed()
@@ -81,10 +97,8 @@ while run:
 
         # Check for collision between player and enemy
         if player.colliderect(enemy.rect):
-            print("Game Over!")  # You can add game-over logic here
+            show_game_over()
             run = False  # End the game
-            
-
 
     # Update and draw each bullet
     for bullet in bullets[:]:  # Iterate over a copy to avoid removing issues
@@ -103,7 +117,7 @@ while run:
                     bullets.remove(bullet)
                 enemys.remove(enemy)
                 enemys.append(create_enemy())  # Replace the destroyed enemy
-                print("Enemy Hit!")  # You can add scoring logic here
+                score += 1  # Increase score
                 break  # Break to avoid checking the same bullet against other enemies
 
     # Update the display
@@ -112,3 +126,4 @@ while run:
 
 # Quit Pygame
 pygame.quit()
+
